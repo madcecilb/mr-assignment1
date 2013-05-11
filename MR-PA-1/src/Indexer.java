@@ -1,133 +1,98 @@
-
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 
-public class Indexer {
 
+public class Indexer {
 	private IndexWriter writer;
 	private Directory indexDirectory;
 	private StandardAnalyzer analyzer;
 	private IndexWriterConfig config;
 	private Version version;
-    private ArrayList<String> indexed;
-	private String beginDomain;
 
-	public Indexer(String url) throws IOException {
-		// 0. Specify the analyzer for tokenizing text.
-	    //    The same analyzer should be used for indexing and searching
+	public Indexer(ArrayList<Text> texts) throws IOException {
+		//  Specify the analyzer for tokenizing text.
+	    //  The same analyzer should be used for indexing and searching
 		version = Version.LUCENE_36;
 		analyzer = new StandardAnalyzer(version);
 		indexDirectory = new RAMDirectory();
-		beginDomain = Domain(url);
-		indexed = new ArrayList<String>();
+
 		config = new IndexWriterConfig(version, 
 				analyzer);
-		
-		writer = new IndexWriter(indexDirectory,  config);
+
+		writer = new IndexWriter(indexDirectory, config);
+		for (Text article :texts) {
+			writer.addDocument(getDocument(article));
+		}
+		writer.commit();
 	}
 	
-	private void indexDocs(String url, int currentDepth, int maxDepth) throws Exception {
-
-		  //index page
-		  Document doc = HTMLDocument.Document(url);
-		  System.out.println("adding " + doc.get("path"));
-		  try {
-			  indexed.add(doc.get("path"));
-			  writer.addDocument(doc);          // add docs unconditionally
-			  //TODO: only add HTML docs
-			  //and create other doc types
-			  currentDepth++;
-			  if(currentDepth < maxDepth){
-				  //get all links on the page then index them
-				  LinkParser lp = new LinkParser(url);
-				  URL[] links = lp.ExtractLinks();
-			  
-				  for (URL l : links) {
-					  //make sure the URL hasn't already been indexed
-					  //make sure the URL contains the home domain
-					  //ignore URLs with a querystrings by excluding "?"
-					  if ((!indexed.contains(l.toURI().toString())) &&
-							  (l.toURI().toString().contains(beginDomain)) &&
-							  (!l.toURI().toString().contains("?"))) {
-						  //don't index zip files
-						  if (!l.toURI().toString().endsWith(".zip")) {
-							  System.out.print(l.toURI().toString());
-							  indexDocs(l.toURI().toString(), currentDepth, maxDepth);
-						  }
-					  }
-				  }
-			  }
+	public void close() throws IOException {
+		writer.close();
+	}
 	
-		  } catch (Exception e) {
-			  System.out.println(e.toString());
-		  }
-	  }
-	  
-	  private static String Domain(String url)
-	  {
-	      int firstDot = url.indexOf(".");
-	      int lastDot =  url.lastIndexOf(".");
-	      return url.substring(firstDot+1,lastDot);
-	  }
-	  
-	  public void close() throws IOException {
-		  writer.close();
-	  }
+	protected static Document getDocument(Text text){
+		Document doc = new Document();
+		
+		doc.add(new Field("path", text.getPath(),
+				Field.Store.YES, Field.Index.NO));
+		doc.add(new Field("topic", text.getTopic(),
+				Field.Store.YES, Field.Index.ANALYZED));
+		doc.add(new Field("text", text.getText(),
+				Field.Store.YES, Field.Index.ANALYZED));
+		
+		return doc;
+	}
+	
+	public IndexWriter getWriter() {
+		return writer;
+	}
 
-	  public void commit() throws IOException {
-		  writer.commit();
-	  }
-	  
-	  /**
-	   * @param args
-	 * @throws Exception 
-	   */
-	  public static void main(String[] args) throws Exception {
-		// TODO Auto-generated method stub
-		  Indexer indexerWeb = new Indexer("http://www.yahoo.com/");
-		  indexerWeb.indexDocs("http://www.yahoo.com/", 0, 2);
-		  indexerWeb.commit();
-		  System.out.println("done");
-	  }
-	  
-	  public IndexWriter getWriter() {
-		  return writer;
-	  }
+	public void setWriter(IndexWriter writer) {
+		this.writer = writer;
+	}
 
-	  public Directory getIndexDirectory() {
-		  return indexDirectory;
-	  }
+	public Directory getIndexDirectory() {
+		return indexDirectory;
+	}
 
-	  public StandardAnalyzer getAnalyzer() {
-		  return analyzer;
-	  }
+	public void setIndexDirectory(Directory indexDirectory) {
+		this.indexDirectory = indexDirectory;
+	}
 
-	  public IndexWriterConfig getConfig() {
-		  return config;
-	  }
+	public StandardAnalyzer getAnalyzer() {
+		return analyzer;
+	}
 
-	  public Version getVersion() {
-		  return version;
-	  }
+	public void setAnalyzer(StandardAnalyzer analyzer) {
+		this.analyzer = analyzer;
+	}
 
-	  public ArrayList<String> getIndexed() {
-		  return indexed;
-	  }
+	public IndexWriterConfig getConfig() {
+		return config;
+	}
 
-	  public String getBeginDomain() {
-		  return beginDomain;
-	  }
+	public void setConfig(IndexWriterConfig config) {
+		this.config = config;
+	}
 
+	public Version getVersion() {
+		return version;
+	}
+
+	public void setVersion(Version version) {
+		this.version = version;
+	}
+	
+	
 }
+

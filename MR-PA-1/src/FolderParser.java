@@ -1,4 +1,5 @@
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 
@@ -6,25 +7,10 @@ public class FolderParser {
 
 	public static ArrayList<String> files;
 	
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) 
-	{	 
-		// Directory path here
-		String path = "data"; 
-		//String[] listOfFiles = getAllFilesAndDirectories(path);
-		//for (String string : listOfFiles) {
-		//	System.out.println(string);
-		//}
+	public static void initializeFileList(){
 		files = new ArrayList<String>();
-		
-		findAllFiles(path);
-		
-		for (String string : files) {
-			System.out.println(string);
-		}
 	}
+
 	
 	public static File[] getAllFiles(String path){
 		
@@ -53,6 +39,19 @@ public class FolderParser {
 				findAllFiles(getWholePath(path, string));
 			}
 		}
+	}
+	
+	public static ArrayList<Text> getTexts(String path) throws IOException {
+		 initializeFileList();
+		 
+		 ArrayList<Text> texts = new ArrayList<Text>();
+		 
+		 findAllFiles(path);
+		 
+		 for (String file : files) {
+			texts.add(new Text(file));
+		 }
+		 return texts;
 	}
 	
 	public static String getWholePath(String path, String name){
