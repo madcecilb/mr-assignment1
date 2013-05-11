@@ -1,0 +1,26 @@
+Assignment 2.4
+
+1. Class FolderParser - gets list of all files inside folder and then parses them.
+
+	* Method getAllFilesAndDirectories(String path) gets all folders and files inside given folder
+
+	* Method findAllFiles(String path) finds all files inside folder and subfolders
+	
+	* Method getTexts(String path) returns list of objects of class Text with data parsed 
+		from all files retrieved by Method findAllFiles(String path)
+
+2. Class Text - holds data
+ 
+	* Is used to keep data about searched files (path, topic, text)
+
+3. Class Indexer - creates index and adds documents to it
+
+	* Method getDocument adds documents to the index
+
+
+4. Class Search - searches for query, main class
+
+	* Read the query, parse it and build a lucene Query out of it.
+
+	* a TopScoreDocCollector is instantiated to collect the top 10 scoring hits.
+ 

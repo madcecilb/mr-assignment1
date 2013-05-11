@@ -12,14 +12,6 @@ public class FolderParser {
 	}
 
 	
-	public static File[] getAllFiles(String path){
-		
-		File folder = new File(path);
-		File[] listOfFiles = folder.listFiles(); 		
-		
-		return listOfFiles;
-	}
-	
 	public static String[] getAllFilesAndDirectories(String path){
 		File folder = new File(path);
 		String[] listOfFiles = folder.list(); 		
